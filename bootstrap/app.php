@@ -14,6 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\InitializeTenancy::class,
         ]);
+
+        $middleware->alias([
+            'tenant.database' => \App\Http\Middleware\TenantDatabaseMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

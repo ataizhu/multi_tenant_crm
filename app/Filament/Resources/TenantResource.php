@@ -94,6 +94,12 @@ class TenantResource extends Resource {
                 //
             ])
             ->actions([
+                Tables\Actions\Action::make('crm')
+                    ->label('CRM')
+                    ->color('primary')
+                    ->icon('heroicon-o-building-office')
+                    ->url(fn(Tenant $record): string => "/tenant/{$record->id}/crm")
+                    ->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
                     ->label('В корзину')
