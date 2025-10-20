@@ -14,18 +14,18 @@ class TenantService {
      * Создать нового тенанта с отдельной БД
      */
     public function createTenant(array $data): Tenant {
-        return DB::transaction(function () use ($data) {
-            // Создаем запись тенанта
-            $tenant = Tenant::create($data);
+        // Создаем БД тенанта ВНЕ транзакции (PostgreSQL не позволяет CREATE DATABASE в транзакции)
+        $tenant = Tenant::create($data);
 
-            // Создаем БД для тенанта
-            $this->createTenantDatabase($tenant);
+        // Создаем БД для тенанта
+        $this->createTenantDatabase($tenant);
 
-            // Применяем миграции для тенанта
+        // Применяем миграции для тенанта в транзакции
+        DB::transaction(function () use ($tenant) {
             $this->runTenantMigrations($tenant);
-
-            return $tenant;
         });
+
+        return $tenant;
     }
 
     /**
@@ -34,11 +34,25 @@ class TenantService {
     public function createTenantDatabase(Tenant $tenant): void {
         $database = $tenant->database;
 
-        // Создаем БД через SQL
-        DB::statement("CREATE DATABASE \"{$database}\"");
+        try {
+            // Создаем БД через прямое подключение (без транзакции)
+            $pdo = new \PDO(
+                "pgsql:host=" . env('DB_HOST', '127.0.0.1') . ";port=" . env('DB_PORT', '5432'),
+                env('DB_USERNAME', 'postgres'),
+                env('DB_PASSWORD', '')
+            );
 
-        // Создаем расширения для JSONB
-        $this->createDatabaseExtensions($database);
+            $pdo->exec("CREATE DATABASE \"{$database}\"");
+
+            // Создаем расширения для JSONB
+            $this->createDatabaseExtensions($database);
+
+        } catch (\Exception $e) {
+            // Логируем ошибку и удаляем запись тенанта
+            \Log::warning("Не удалось создать базу данных {$database}: " . $e->getMessage());
+            $tenant->delete();
+            throw $e;
+        }
     }
 
     /**
@@ -142,10 +156,11 @@ class TenantService {
      * Полное удаление тенанта (из корзины)
      */
     public function forceDeleteTenant(Tenant $tenant): void {
-        DB::transaction(function () use ($tenant) {
-            // Удаляем БД тенанта
-            $this->dropTenantDatabase($tenant);
+        // Удаляем БД тенанта ВНЕ транзакции (PostgreSQL не позволяет DROP DATABASE в транзакции)
+        $this->dropTenantDatabase($tenant);
 
+        // Удаляем записи из БД в транзакции
+        DB::transaction(function () use ($tenant) {
             // Удаляем запись из корзины
             $tenant->trash()->delete();
 
@@ -167,10 +182,22 @@ class TenantService {
     private function dropTenantDatabase(Tenant $tenant): void {
         $database = $tenant->database;
 
-        // Закрываем все соединения с БД
-        DB::statement("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = ?", [$database]);
+        try {
+            // Закрываем все соединения с БД
+            DB::statement("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = ? AND pid <> pg_backend_pid()", [$database]);
 
-        // Удаляем БД
-        DB::statement("DROP DATABASE IF EXISTS \"{$database}\"");
+            // Удаляем БД через прямое подключение (без транзакции)
+            $pdo = new \PDO(
+                "pgsql:host=" . env('DB_HOST', '127.0.0.1') . ";port=" . env('DB_PORT', '5432'),
+                env('DB_USERNAME', 'postgres'),
+                env('DB_PASSWORD', '')
+            );
+
+            $pdo->exec("DROP DATABASE IF EXISTS \"{$database}\"");
+
+        } catch (\Exception $e) {
+            // Логируем ошибку, но не прерываем выполнение
+            \Log::warning("Не удалось удалить базу данных {$database}: " . $e->getMessage());
+        }
     }
 }
