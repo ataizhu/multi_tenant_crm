@@ -18,16 +18,21 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Http\Middleware\TenantDatabaseMiddleware;
+use App\Http\Middleware\TenantUrlMiddleware;
 
 class TenantPanelProvider extends PanelProvider {
     public function panel(Panel $panel): Panel {
         return $panel
             ->id('tenant')
-            ->path('tenant')
+            ->path('tenant-crm')
             ->colors([
                 'primary' => Color::Blue,
             ])
-            ->brandName('CRM Система')
+            ->brandName('')
+            ->sidebarCollapsibleOnDesktop()
+            ->maxContentWidth('full')
+            ->navigation(false) // Отключаем боковую навигацию
+            ->renderHook('panels::topbar.start', fn(): string => view('components.top-navigation')->render())
             ->resources([
                 \App\Filament\Resources\Tenant\SubscriberResource::class,
                 \App\Filament\Resources\Tenant\MeterResource::class,
@@ -41,7 +46,9 @@ class TenantPanelProvider extends PanelProvider {
                 Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Tenant/Widgets'), for: 'App\\Filament\\Tenant\\Widgets')
-            ->widgets([])
+            ->widgets([
+                \App\Filament\Tenant\Widgets\SubscriberStatsWidget::class,
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -52,6 +59,7 @@ class TenantPanelProvider extends PanelProvider {
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                TenantUrlMiddleware::class,
                 TenantDatabaseMiddleware::class,
             ])
             ->authMiddleware([]);

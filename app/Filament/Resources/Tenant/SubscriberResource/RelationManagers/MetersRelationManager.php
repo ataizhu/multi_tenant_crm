@@ -1,45 +1,33 @@
 <?php
 
-namespace App\Filament\Resources\Tenant;
+namespace App\Filament\Resources\Tenant\SubscriberResource\RelationManagers;
 
-use App\Filament\Resources\Tenant\MeterResource\Pages;
-use App\Models\Meter;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class MeterResource extends Resource {
-    protected static ?string $model = Meter::class;
+class MetersRelationManager extends RelationManager {
+    protected static string $relationship = 'meters';
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
-
-    protected static ?string $navigationLabel = 'Счетчики';
-
-    protected static ?int $navigationSort = 2;
+    protected static ?string $title = 'Счетчики';
 
     protected static ?string $modelLabel = 'Счетчик';
 
     protected static ?string $pluralModelLabel = 'Счетчики';
 
-    protected static ?string $navigationGroup = null;
-
-    public static function form(Form $form): Form {
+    public function form(Form $form): Form {
         return $form
             ->schema([
-                Forms\Components\Section::make('Основная информация')
+                Forms\Components\Section::make('Layout')
                     ->schema([
-                        Forms\Components\Select::make('subscriber_id')
-                            ->label('Абонент')
-                            ->relationship('subscriber', 'name')
-                            ->searchable()
-                            ->required(),
-
                         Forms\Components\TextInput::make('number')
                             ->label('Номер счетчика')
                             ->required()
-                            ->unique(ignoreRecord: true),
+                            ->maxLength(255),
 
                         Forms\Components\Select::make('type')
                             ->label('Тип счетчика')
@@ -50,15 +38,23 @@ class MeterResource extends Resource {
                                 'heating' => 'Отопление',
                             ])
                             ->required(),
-                    ])->columns(2),
 
-                Forms\Components\Section::make('Техническая информация')
-                    ->schema([
                         Forms\Components\TextInput::make('model')
                             ->label('Модель'),
 
                         Forms\Components\TextInput::make('manufacturer')
                             ->label('Производитель'),
+                    ])->columns(2),
+
+                Forms\Components\Section::make('Показания и статус')
+                    ->schema([
+                        Forms\Components\TextInput::make('last_reading')
+                            ->label('Последнее показание')
+                            ->numeric()
+                            ->step(0.01),
+
+                        Forms\Components\DatePicker::make('last_reading_date')
+                            ->label('Дата последнего показания'),
 
                         Forms\Components\Select::make('status')
                             ->label('Статус')
@@ -70,52 +66,16 @@ class MeterResource extends Resource {
                             ])
                             ->default('active')
                             ->required(),
-
-                        Forms\Components\DatePicker::make('installation_date')
-                            ->label('Дата установки'),
-                    ])->columns(2),
-
-                Forms\Components\Section::make('Показания')
-                    ->schema([
-                        Forms\Components\TextInput::make('last_reading')
-                            ->label('Последнее показание')
-                            ->numeric()
-                            ->step(0.01)
-                            ->default(0),
-
-                        Forms\Components\DatePicker::make('last_reading_date')
-                            ->label('Дата последнего показания'),
-                    ])->columns(2),
-
-                Forms\Components\Section::make('Поверка')
-                    ->schema([
-                        Forms\Components\DatePicker::make('verification_date')
-                            ->label('Дата поверки'),
-
-                        Forms\Components\DatePicker::make('next_verification_date')
-                            ->label('Дата следующей поверки'),
-                    ])->columns(2),
-
-                Forms\Components\Section::make('Дополнительная информация')
-                    ->schema([
-                        Forms\Components\KeyValue::make('additional_info')
-                            ->label('Дополнительная информация')
-                            ->keyLabel('Ключ')
-                            ->valueLabel('Значение'),
-                    ]),
+                    ])->columns(3),
             ]);
     }
 
-    public static function table(Table $table): Table {
+    public function table(Table $table): Table {
         return $table
+            ->recordTitleAttribute('number')
             ->columns([
                 Tables\Columns\TextColumn::make('number')
-                    ->label('Номер счетчика')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('subscriber.name')
-                    ->label('Абонент')
+                    ->label('Номер')
                     ->searchable()
                     ->sortable(),
 
@@ -133,6 +93,14 @@ class MeterResource extends Resource {
                         'gas' => 'Газ',
                         'heating' => 'Отопление',
                     }),
+
+                Tables\Columns\TextColumn::make('model')
+                    ->label('Модель')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('manufacturer')
+                    ->label('Производитель')
+                    ->searchable(),
 
                 Tables\Columns\TextColumn::make('last_reading')
                     ->label('Последнее показание')
@@ -158,12 +126,6 @@ class MeterResource extends Resource {
                         'broken' => 'Сломан',
                         'replaced' => 'Заменен',
                     }),
-
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Создан')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
@@ -184,7 +146,11 @@ class MeterResource extends Resource {
                         'replaced' => 'Заменен',
                     ]),
             ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make(),
+            ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -192,14 +158,7 @@ class MeterResource extends Resource {
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
-    }
-
-    public static function getPages(): array {
-        return [
-            'index' => Pages\ListMeters::route('/'),
-            'create' => Pages\CreateMeter::route('/create'),
-            'edit' => Pages\EditMeter::route('/{record}/edit'),
-        ];
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 }

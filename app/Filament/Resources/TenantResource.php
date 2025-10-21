@@ -98,7 +98,7 @@ class TenantResource extends Resource {
                     ->label('CRM')
                     ->color('primary')
                     ->icon('heroicon-o-building-office')
-                    ->url(fn(Tenant $record): string => "/tenant/{$record->id}/crm")
+                    ->url(fn(Tenant $record): string => "/tenant-crm/tenant/subscribers?tenant={$record->id}")
                     ->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()

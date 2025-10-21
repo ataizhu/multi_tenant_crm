@@ -20,6 +20,10 @@ class SubscriberResource extends Resource {
 
     protected static ?string $navigationLabel = 'Абоненты';
 
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationGroup = null;
+
     protected static ?string $modelLabel = 'Абонент';
 
     protected static ?string $pluralModelLabel = 'Абоненты';
@@ -151,6 +155,7 @@ class SubscriberResource extends Resource {
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
+            ->recordUrl(fn($record): string => static::getUrl('view', ['record' => $record]))
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
@@ -169,6 +174,7 @@ class SubscriberResource extends Resource {
         return [
             'index' => Pages\ListSubscribers::route('/'),
             'create' => Pages\CreateSubscriber::route('/create'),
+            'view' => Pages\ViewSubscriber::route('/{record}'),
             'edit' => Pages\EditSubscriber::route('/{record}/edit'),
         ];
     }

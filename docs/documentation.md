@@ -154,8 +154,8 @@ class TenantService
 - `/admin/tenant-trashes` - Корзина тенантов
 
 ### 4.2 CRM тенанта
-- `/tenant/{tenant_id}/crm` - Главная страница CRM
-- `/tenant/{tenant_id}/crm/tenant/subscribers` - Управление абонентами
+- `/tenant-crm?tenant={tenant_id}` - Главная страница CRM
+- `/tenant-crm/tenant/subscribers?tenant={tenant_id}` - Управление абонентами
 
 ## 5. Безопасность
 

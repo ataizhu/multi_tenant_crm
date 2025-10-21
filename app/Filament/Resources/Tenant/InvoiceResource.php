@@ -17,11 +17,13 @@ class InvoiceResource extends Resource {
 
     protected static ?string $navigationLabel = 'Счета';
 
+    protected static ?int $navigationSort = 4;
+
     protected static ?string $modelLabel = 'Счет';
 
     protected static ?string $pluralModelLabel = 'Счета';
 
-    protected static ?string $navigationGroup = 'Финансы';
+    protected static ?string $navigationGroup = null;
 
     public static function form(Form $form): Form {
         return $form

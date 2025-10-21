@@ -11,7 +11,9 @@ class ListInvoices extends ListRecords {
 
     protected function getHeaderActions(): array {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Добавить счет')
+                ->icon('heroicon-o-plus'),
         ];
     }
 }
