@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Subscriber extends Model {
     protected $connection = 'tenant';
@@ -25,6 +26,18 @@ class Subscriber extends Model {
         'registration_date' => 'date',
         'additional_info' => 'array',
     ];
+
+    public function meters(): HasMany {
+        return $this->hasMany(Meter::class);
+    }
+
+    public function invoices(): HasMany {
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function payments(): HasMany {
+        return $this->hasMany(Payment::class);
+    }
 
     public function isActive(): bool {
         return $this->status === 'active';

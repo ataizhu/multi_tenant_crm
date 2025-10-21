@@ -30,6 +30,11 @@ class TenantPanelProvider extends PanelProvider {
             ->brandName('CRM Система')
             ->resources([
                 \App\Filament\Resources\Tenant\SubscriberResource::class,
+                \App\Filament\Resources\Tenant\MeterResource::class,
+                \App\Filament\Resources\Tenant\MeterReadingResource::class,
+                \App\Filament\Resources\Tenant\InvoiceResource::class,
+                \App\Filament\Resources\Tenant\PaymentResource::class,
+                \App\Filament\Resources\Tenant\ServiceResource::class,
             ])
             ->discoverPages(in: app_path('Filament/Tenant/Pages'), for: 'App\\Filament\\Tenant\\Pages')
             ->pages([
