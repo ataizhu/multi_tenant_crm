@@ -17,11 +17,13 @@ class MeterReadingResource extends Resource {
 
     protected static ?string $navigationLabel = 'Показания счетчиков';
 
+    protected static ?int $navigationSort = 3;
+
     protected static ?string $modelLabel = 'Показание счетчика';
 
     protected static ?string $pluralModelLabel = 'Показания счетчиков';
 
-    protected static ?string $navigationGroup = 'Управление';
+    protected static ?string $navigationGroup = null;
 
     public static function form(Form $form): Form {
         return $form

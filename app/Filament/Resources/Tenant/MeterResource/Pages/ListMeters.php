@@ -6,14 +6,14 @@ use App\Filament\Resources\Tenant\MeterResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
-class ListMeters extends ListRecords
-{
+class ListMeters extends ListRecords {
     protected static string $resource = MeterResource::class;
 
-    protected function getHeaderActions(): array
-    {
+    protected function getHeaderActions(): array {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Добавить счетчик')
+                ->icon('heroicon-o-plus'),
         ];
     }
 }

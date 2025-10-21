@@ -14,14 +14,14 @@ class TenantDatabaseMiddleware {
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response {
-        // Получаем tenant_id из URL или сессии
-        $tenantId = $request->route('tenant_id') ?? session('tenant_id');
+        // Определяем tenant по параметру в URL или сессии
+        $tenantId = $this->getTenantId($request);
 
         if ($tenantId) {
             $tenant = Tenant::find($tenantId);
 
             if ($tenant && !$tenant->deleted) {
-                // Настраиваем подключение к БД тенанта
+                // Настраиваем подключение к БД tenant
                 config([
                     'database.connections.tenant' => [
                         'driver' => 'pgsql',
@@ -38,8 +38,8 @@ class TenantDatabaseMiddleware {
                     ]
                 ]);
 
-                // Сохраняем tenant_id в сессии
-                session(['tenant_id' => $tenantId]);
+                // Сохраняем tenant в сессии для брендинга
+                session(['current_tenant' => $tenant]);
 
                 // Сохраняем тенанта в запросе
                 $request->attributes->set('tenant', $tenant);
@@ -47,5 +47,31 @@ class TenantDatabaseMiddleware {
         }
 
         return $next($request);
+    }
+
+    /**
+     * Определяем ID tenant различными способами
+     */
+    private function getTenantId(Request $request): ?int {
+        // 1. По параметру в URL (?tenant=9)
+        if ($request->has('tenant')) {
+            return (int) $request->get('tenant');
+        }
+
+        // 2. По поддомену (test.localhost)
+        $host = $request->getHost();
+        if (strpos($host, '.') !== false) {
+            $subdomain = explode('.', $host)[0];
+            if ($subdomain !== 'localhost' && $subdomain !== '127') {
+                return Tenant::where('domain', $subdomain)->value('id');
+            }
+        }
+
+        // 3. По сессии (если уже выбран tenant)
+        if (session()->has('current_tenant')) {
+            return session('current_tenant')->id;
+        }
+
+        return null;
     }
 }

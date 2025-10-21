@@ -17,11 +17,13 @@ class PaymentResource extends Resource {
 
     protected static ?string $navigationLabel = 'Платежи';
 
+    protected static ?int $navigationSort = 5;
+
     protected static ?string $modelLabel = 'Платеж';
 
     protected static ?string $pluralModelLabel = 'Платежи';
 
-    protected static ?string $navigationGroup = 'Финансы';
+    protected static ?string $navigationGroup = null;
 
     public static function form(Form $form): Form {
         return $form

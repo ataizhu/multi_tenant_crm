@@ -11,7 +11,9 @@ class ListMeterReadings extends ListRecords {
 
     protected function getHeaderActions(): array {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Добавить показание')
+                ->icon('heroicon-o-plus'),
         ];
     }
 }

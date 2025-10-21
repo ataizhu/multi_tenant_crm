@@ -17,11 +17,13 @@ class ServiceResource extends Resource {
 
     protected static ?string $navigationLabel = 'Услуги';
 
+    protected static ?int $navigationSort = 6;
+
     protected static ?string $modelLabel = 'Услуга';
 
     protected static ?string $pluralModelLabel = 'Услуги';
 
-    protected static ?string $navigationGroup = 'Справочники';
+    protected static ?string $navigationGroup = null;
 
     public static function form(Form $form): Form {
         return $form
