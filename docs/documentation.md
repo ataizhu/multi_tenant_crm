@@ -1,410 +1,247 @@
-# Детальная документация CRM платформы
+# Документация Multi-Tenant CRM системы
 
 ## 1. Архитектура системы
 
-### 1.1 Структура баз данных
+### 1.1 Общая схема
 
-#### Центральная база данных (central)
+Система построена на принципе **Database-per-Tenant** - каждый клиент (тенант) имеет свою собственную базу данных PostgreSQL, что обеспечивает максимальную изоляцию данных и безопасность.
 
-```sql
--- Таблица клиентов
-CREATE TABLE tenants (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    domain VARCHAR(255) UNIQUE NOT NULL,
-    database VARCHAR(255) UNIQUE NOT NULL,
-    settings JSON,
-    status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    deleted_by BIGINT UNSIGNED NULL,
-    deleted_reason TEXT NULL
-);
+### 1.2 Основные компоненты
 
--- Таблица пользователей центра
-CREATE TABLE users (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    role ENUM('super_admin', 'admin') NOT NULL,
-    tenant_id BIGINT UNSIGNED NULL,
-    status ENUM('active', 'inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    deleted_by BIGINT UNSIGNED NULL,
-    deleted_reason TEXT NULL,
-    FOREIGN KEY (tenant_id) REFERENCES tenants(id)
-);
+#### Центральная часть
+- **База данных**: `central_crm` - управление тенантами и пользователями
+- **Админ панель**: Filament AdminPanelProvider - управление тенантами
+- **Пользователи**: Администраторы системы
 
--- Таблица истории действий
-CREATE TABLE history (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    table_name VARCHAR(255) NOT NULL,
-    record_id BIGINT UNSIGNED NOT NULL,
-    action ENUM('create', 'update', 'delete') NOT NULL,
-    old_data JSON NULL,
-    new_data JSON NULL,
-    user_id BIGINT UNSIGNED NOT NULL,
-    ip_address VARCHAR(45) NOT NULL,
-    user_agent TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
+#### Тенантская часть
+- **База данных**: `tenant_*` - индивидуальные данные каждого клиента
+- **CRM панель**: Filament TenantPanelProvider - управление абонентами
+- **Пользователи**: Пока нет аутентификации (планируется)
+
+### 1.3 Middleware система
+
+#### TenantDatabaseMiddleware
+```php
+// app/Http/Middleware/TenantDatabaseMiddleware.php
+class TenantDatabaseMiddleware
+{
+    public function handle($request, Closure $next)
+    {
+        $tenantId = $request->route('tenant_id') ?? session('tenant_id');
+        
+        if ($tenantId) {
+            $tenant = Tenant::find($tenantId);
+            $this->configureTenantDatabase($tenant);
+        }
+        
+        return $next($request);
+    }
+}
 ```
 
-#### База данных клиента (tenant_*)
-
-```sql
--- Таблица пользователей клиента
-CREATE TABLE users (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'manager', 'operator') NOT NULL,
-    status ENUM('active', 'inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    deleted_by BIGINT UNSIGNED NULL,
-    deleted_reason TEXT NULL
-);
-
--- Таблица абонентов
-CREATE TABLE subscribers (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    address TEXT NOT NULL,
-    phone VARCHAR(20) NOT NULL,
-    balance DECIMAL(10,2) DEFAULT 0.00,
-    status ENUM('active', 'inactive', 'blocked') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    deleted_by BIGINT UNSIGNED NULL,
-    deleted_reason TEXT NULL
-);
-
--- Таблица услуг
-CREATE TABLE services (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    type VARCHAR(50) NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
-    settings JSON,
-    status ENUM('active', 'inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    deleted_by BIGINT UNSIGNED NULL,
-    deleted_reason TEXT NULL
-);
-
--- Таблица счетчиков
-CREATE TABLE meters (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    subscriber_id BIGINT UNSIGNED NOT NULL,
-    type VARCHAR(50) NOT NULL,
-    number VARCHAR(50) NOT NULL,
-    last_value DECIMAL(10,2) DEFAULT 0.00,
-    status ENUM('active', 'inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    deleted_by BIGINT UNSIGNED NULL,
-    deleted_reason TEXT NULL,
-    FOREIGN KEY (subscriber_id) REFERENCES subscribers(id)
-);
-
--- Таблица показаний счетчиков
-CREATE TABLE meter_readings (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    meter_id BIGINT UNSIGNED NOT NULL,
-    value DECIMAL(10,2) NOT NULL,
-    reading_date DATE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_by BIGINT UNSIGNED NOT NULL,
-    FOREIGN KEY (meter_id) REFERENCES meters(id),
-    FOREIGN KEY (created_by) REFERENCES users(id)
-);
-
--- Таблица счетов
-CREATE TABLE bills (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    subscriber_id BIGINT UNSIGNED NOT NULL,
-    number VARCHAR(50) NOT NULL,
-    amount DECIMAL(10,2) NOT NULL,
-    tax_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    total_amount DECIMAL(10,2) NOT NULL,
-    status ENUM('draft', 'sent', 'paid', 'cancelled') DEFAULT 'draft',
-    due_date DATE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_by BIGINT UNSIGNED NOT NULL,
-    FOREIGN KEY (subscriber_id) REFERENCES subscribers(id),
-    FOREIGN KEY (created_by) REFERENCES users(id)
-);
-
--- Таблица платежей
-CREATE TABLE payments (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    bill_id BIGINT UNSIGNED NOT NULL,
-    amount DECIMAL(10,2) NOT NULL,
-    method VARCHAR(50) NOT NULL,
-    status ENUM('pending', 'completed', 'failed') DEFAULT 'pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_by BIGINT UNSIGNED NOT NULL,
-    FOREIGN KEY (bill_id) REFERENCES bills(id),
-    FOREIGN KEY (created_by) REFERENCES users(id)
-);
-
--- Таблица тарифов
-CREATE TABLE tariffs (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    type VARCHAR(50) NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
-    settings JSON,
-    status ENUM('active', 'inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    deleted_by BIGINT UNSIGNED NULL,
-    deleted_reason TEXT NULL
-);
-
--- Таблица налоговых ставок
-CREATE TABLE tax_rates (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    rate DECIMAL(5,2) NOT NULL,
-    type ENUM('percentage', 'fixed') NOT NULL,
-    is_default BOOLEAN DEFAULT FALSE,
-    status ENUM('active', 'inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    deleted_by BIGINT UNSIGNED NULL,
-    deleted_reason TEXT NULL
-);
-
--- Таблица налоговых отчетов
-CREATE TABLE tax_reports (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    period_start DATE NOT NULL,
-    period_end DATE NOT NULL,
-    total_amount DECIMAL(10,2) NOT NULL,
-    total_tax DECIMAL(10,2) NOT NULL,
-    status ENUM('draft', 'submitted', 'approved') DEFAULT 'draft',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_by BIGINT UNSIGNED NOT NULL,
-    submitted_at TIMESTAMP NULL,
-    approved_at TIMESTAMP NULL,
-    approved_by BIGINT UNSIGNED NULL,
-    FOREIGN KEY (created_by) REFERENCES users(id),
-    FOREIGN KEY (approved_by) REFERENCES users(id)
-);
+#### TenantServiceProvider
+```php
+// app/Providers/TenantServiceProvider.php
+class TenantServiceProvider extends ServiceProvider
+{
+    public function boot()
+    {
+        app()->booted(function () {
+            $tenantId = session('tenant_id');
+            if ($tenantId) {
+                $tenant = Tenant::find($tenantId);
+                if ($tenant) {
+                    $this->configureTenantDatabase($tenant);
+                }
+            }
+        });
+    }
+}
 ```
 
-### 1.2 Структура проекта
+### 1.4 Сервисы
 
-```
-app/
-├── Console/
-│   └── Commands/
-│       ├── CreateTenant.php
-│       ├── DeleteTenant.php
-│       └── TenantMaintenance.php
-├── Http/
-│   ├── Controllers/
-│   │   ├── Central/
-│   │   │   ├── TenantController.php
-│   │   │   └── UserController.php
-│   │   └── Tenant/
-│   │       ├── SubscriberController.php
-│   │       ├── ServiceController.php
-│   │       ├── BillController.php
-│   │       ├── PaymentController.php
-│   │       └── TaxController.php
-│   ├── Middleware/
-│   │   ├── InitializeTenancy.php
-│   │   └── PreventAccessFromCentralDomains.php
-│   └── Requests/
-├── Models/
-│   ├── Central/
-│   │   ├── Tenant.php
-│   │   └── User.php
-│   └── Tenant/
-│       ├── Subscriber.php
-│       ├── Service.php
-│       ├── Bill.php
-│       ├── Payment.php
-│       └── TaxRate.php
-├── Services/
-│   ├── TenantService.php
-│   ├── BillingService.php
-│   └── TaxService.php
-└── Providers/
-    └── TenancyServiceProvider.php
+#### TenantService
+```php
+// app/Services/TenantService.php
+class TenantService
+{
+    public function createTenant(array $data): Tenant
+    public function createTenantDatabase(Tenant $tenant): void
+    public function runTenantMigrations(Tenant $tenant): void
+    public function softDeleteTenant(Tenant $tenant, ?string $reason = null): void
+    public function restoreTenant(Tenant $tenant): void
+    public function forceDeleteTenant(Tenant $tenant): void
+}
 ```
 
-## 2. Роли и права доступа
+## 2. Структура базы данных
 
-### 2.1 Суперадмин (super_admin)
+### 2.1 Центральная база данных (central_crm)
 
-- Управление всеми клиентами
-- Создание/удаление клиентов
-- Управление всеми админами
-- Доступ к системным настройкам
-- Доступ к логам системы
-- Доступ к статистике по всем клиентам
+#### Таблица tenants
+- `id` - ID тенанта
+- `name` - Название организации
+- `domain` - Домен тенанта (уникальный)
+- `database` - Имя БД тенанта (уникальное)
+- `settings` - Настройки в JSONB формате
+- `status` - Статус (active/inactive/suspended)
+- `deleted` - Флаг мягкого удаления
+- `timestamps` - Временные метки
 
-### 2.2 Админ центра (admin)
+#### Таблица tenant_trash
+- `id` - ID записи корзины
+- `tenant_id` - Ссылка на тенанта
+- `deleted_by` - Кто удалил
+- `deleted_at` - Когда удален
+- `deletion_reason` - Причина удаления
+- `timestamps` - Временные метки
 
-- Управление своим клиентом
-- Управление пользователями клиента
-- Настройки клиента
-- Доступ к логам клиента
-- Доступ к статистике клиента
+#### Таблица users
+- `id` - ID пользователя
+- `name` - Имя пользователя
+- `email` - Email (уникальный)
+- `password` - Хэшированный пароль
+- `timestamps` - Временные метки
 
-### 2.3 Менеджер клиента (manager)
+### 2.2 База данных тенанта (tenant_*)
 
-- Управление абонентами
-- Управление услугами
-- Управление счетами
-- Просмотр отчетов
-- Управление платежами
-- Управление налогами
-
-### 2.4 Оператор клиента (operator)
-
-- Просмотр абонентов
-- Ввод показаний счетчиков
-- Создание счетов
-- Прием платежей
-- Просмотр отчетов
-- Ввод налоговых данных
+#### Таблица subscribers
+- `id` - ID абонента
+- `name` - ФИО абонента
+- `address` - Адрес
+- `apartment_number` - Номер квартиры
+- `building_number` - Номер дома
+- `phone` - Телефон
+- `email` - Email
+- `status` - Статус абонента
+- `balance` - Баланс
+- `registration_date` - Дата регистрации
+- `additional_info` - Дополнительная информация (JSONB)
+- `timestamps` - Временные метки
 
 ## 3. Основные процессы
 
-### 3.1 Создание нового клиента
+### 3.1 Создание нового тенанта
 
-1. Создание записи в центральной БД
-2. Создание новой БД
-3. Применение миграций
-4. Создание админа клиента
+1. Создание записи в таблице `tenants`
+2. Создание новой БД `tenant_*`
+3. Применение миграций для БД тенанта
+4. Тенант готов к использованию
 
-### 3.2 Аутентификация
+### 3.2 Мягкое удаление тенанта
 
-1. Определение клиента по домену
-2. Подключение к нужной БД
-3. Проверка прав доступа
+1. Установка флага `deleted = true` в таблице `tenants`
+2. Создание записи в таблице `tenant_trash`
+3. БД тенанта остается нетронутой
 
-### 3.3 Биллинг
+### 3.3 Восстановление тенанта
 
-1. Создание счета
-2. Обновление баланса абонента
-3. Прием платежа
-4. Обновление баланса
+1. Сброс флага `deleted = false` в таблице `tenants`
+2. Удаление записи из таблицы `tenant_trash`
 
-### 3.4 Налоги
+### 3.4 Полное удаление тенанта
 
-1. Настройка налоговых ставок
-2. Расчет налогов при создании счета
-3. Формирование налоговых отчетов
-4. Экспорт налоговых документов
-5. Интеграция с налоговыми системами
+1. Удаление БД тенанта
+2. Удаление записи из таблицы `tenant_trash`
+3. Удаление записи из таблицы `tenants`
 
-## 4. API Endpoints
+## 4. Маршруты
 
-### 4.1 Центральная часть
+### 4.1 Центральная админка
+- `/admin` - Главная страница админки
+- `/admin/tenants` - Управление тенантами
+- `/admin/tenant-trashes` - Корзина тенантов
 
-```
-POST /api/tenants
-GET /api/tenants
-PUT /api/tenants/{id}
-DELETE /api/tenants/{id}
-```
-
-### 4.2 Клиентская часть
-
-```
-GET /api/subscribers
-POST /api/subscribers
-GET /api/bills
-POST /api/bills
-POST /api/payments
-GET /api/tax-rates
-POST /api/tax-rates
-GET /api/tax-reports
-POST /api/tax-reports
-```
+### 4.2 CRM тенанта
+- `/tenant/{tenant_id}/crm` - Главная страница CRM
+- `/tenant/{tenant_id}/crm/tenant/subscribers` - Управление абонентами
 
 ## 5. Безопасность
 
 ### 5.1 Изоляция данных
 
-- Каждый клиент имеет свою БД
-- Нет прямого доступа между клиентами
-- Все запросы проверяются на принадлежность к клиенту
+- Каждый тенант имеет изолированную БД
+- Middleware автоматически переключает подключение к БД
+- Нет прямого доступа между тенантами
 
-### 5.2 Аутентификация
+### 5.2 Базовая аутентификация
 
-- JWT токены
-- Refresh токены
-- Двухфакторная аутентификация
-- Блокировка после неудачных попыток
+- Аутентификация только для центральной админки
+- Аутентификация для тенантов пока не реализована (планируется)
 
-### 5.3 Аудит
+## 6. Развертывание
 
-- Логирование всех действий
-- История изменений
-- IP адреса
-- User Agent
+### 6.1 Требования
 
-## 6. Оптимизация
+- PHP 8.2+
+- PostgreSQL 13+
+- Composer
+- Node.js & NPM
 
-### 6.1 Кэширование
-
-- Redis для кэширования
-- Кэширование запросов
-- Кэширование отчетов
-
-### 6.2 Очереди
-
-- Очереди для тяжелых операций
-- Очереди для уведомлений
-- Очереди для отчетов
-
-### 6.3 Мониторинг
-
-- Мониторинг производительности
-- Мониторинг ошибок
-- Мониторинг нагрузки
-
-## 7. Развертывание
-
-### 7.1 Требования
-
-- PHP 8.1+
-- MySQL 8.0+
-- Redis
-- Nginx/Apache
-- SSL сертификат
-
-### 7.2 Процесс развертывания
+### 6.2 Процесс развертывания
 
 1. Клонирование репозитория
 2. Установка зависимостей
 3. Настройка окружения
 4. Применение миграций
-5. Настройка SSL
-6. Настройка доменов
+5. Создание администратора
+6. Запуск сервера
 
-### 7.3 Бэкапы
+### 6.3 Настройка базы данных
 
-- Автоматические бэкапы БД
-- Бэкапы файлов
-- Репликация БД
+```sql
+CREATE DATABASE central_crm;
+CREATE USER postgres WITH PASSWORD 'your_password';
+GRANT ALL PRIVILEGES ON DATABASE central_crm TO postgres;
+```
+
+## 7. Текущее состояние
+
+### 7.1 Реализованные функции
+
+- ✅ Создание и управление тенантами
+- ✅ Мягкое удаление в корзину
+- ✅ Восстановление из корзины
+- ✅ Полное удаление с БД
+- ✅ Управление абонентами
+- ✅ Две отдельные Filament панели
+- ✅ Middleware для переключения БД
+
+### 7.2 Планируемые функции
+
+- 🔄 Аутентификация для тенантов
+- 🔄 Услуги и тарифы
+- 🔄 Счета и платежи
+- 🔄 Отчеты и аналитика
+- 🔄 API для интеграций
+- 🔄 Доменная архитектура
+
+## 8. Структура проекта
+
+```
+app/
+├── Filament/Resources/
+│   ├── TenantResource.php              # Управление тенантами
+│   ├── TenantTrashResource.php         # Корзина тенантов
+│   └── Tenant/
+│       └── SubscriberResource.php      # Управление абонентами
+├── Http/Middleware/
+│   └── TenantDatabaseMiddleware.php    # Переключение БД
+├── Models/
+│   ├── Tenant.php                      # Модель тенанта
+│   ├── TenantTrash.php                 # Модель корзины
+│   ├── User.php                        # Модель пользователя
+│   └── Subscriber.php                  # Модель абонента
+├── Providers/
+│   └── TenantServiceProvider.php       # Сервис провайдер
+└── Services/
+    └── TenantService.php               # Логика управления тенантами
+
+database/
+├── migrations/                         # Миграции центральной БД
+│   ├── create_tenants_table.php
+│   └── create_users_table.php
+└── migrations/tenant/                  # Миграции для БД тенантов
+    └── create_subscribers_table.php
+```
