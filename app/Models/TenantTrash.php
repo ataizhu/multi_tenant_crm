@@ -23,6 +23,11 @@ class TenantTrash extends Model {
     ];
 
     /**
+     * Отключаем автоматические timestamps для этой модели
+     */
+    public $timestamps = false;
+
+    /**
      * Связь с тенантом
      */
     public function tenant(): BelongsTo {

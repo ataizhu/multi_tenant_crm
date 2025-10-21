@@ -14,6 +14,12 @@ class TenantService {
      * Создать нового тенанта с отдельной БД
      */
     public function createTenant(array $data): Tenant {
+        // Генерируем имя базы данных для тенанта
+        $databaseName = 'tenant_' . str_replace('-', '_', $data['domain']);
+
+        // Добавляем имя базы данных в данные
+        $data['database'] = $databaseName;
+
         // Создаем БД тенанта ВНЕ транзакции (PostgreSQL не позволяет CREATE DATABASE в транзакции)
         $tenant = Tenant::create($data);
 
