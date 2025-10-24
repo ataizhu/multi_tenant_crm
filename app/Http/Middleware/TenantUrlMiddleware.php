@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Tenant;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,22 +13,49 @@ class TenantUrlMiddleware {
      */
     public function handle(Request $request, Closure $next): Response {
         // Приоритет: параметр в URL > сессия
-        $tenantId = $request->get('tenant');
+        $tenantParam = $request->get('tenant');
 
-        if (!$tenantId && session()->has('current_tenant')) {
-            $tenant = session('current_tenant');
-            $tenantId = is_object($tenant) ? $tenant->id : $tenant;
+        // Если нет параметра tenant, пробуем определить по поддомену
+        if (!$tenantParam) {
+            $host = $request->getHost();
+            if (strpos($host, '.') !== false) {
+                $subdomain = explode('.', $host)[0];
+                if ($subdomain !== 'localhost' && $subdomain !== '127') {
+                    $tenantParam = $subdomain;
+                }
+            }
         }
 
-        // Если есть tenant ID, но его нет в URL, добавляем его
-        if ($tenantId && !$request->has('tenant')) {
-            $url = $request->fullUrl();
-            $separator = strpos($url, '?') !== false ? '&' : '?';
-            $newUrl = $url . $separator . 'tenant=' . $tenantId;
+        if (!$tenantParam && session()->has('current_tenant')) {
+            $tenant = session('current_tenant');
+            $tenantParam = is_object($tenant) ? $tenant->id : $tenant;
+        }
 
-            return redirect($newUrl);
+        // Если есть параметр tenant, загружаем объект тенанта
+        if ($tenantParam && !is_object($tenantParam)) {
+            $tenant = $this->findTenant($tenantParam);
+            if ($tenant) {
+                $request->merge(['tenant' => $tenant]);
+            }
         }
 
         return $next($request);
+    }
+
+    /**
+     * Найти тенанта по ID или домену
+     */
+    private function findTenant($param): ?Tenant {
+        // Если это числовой ID
+        if (is_numeric($param)) {
+            return Tenant::find($param);
+        }
+
+        // Если это строка (домен), ищем по полю domain
+        if (is_string($param)) {
+            return Tenant::where('domain', $param)->first();
+        }
+
+        return null;
     }
 }

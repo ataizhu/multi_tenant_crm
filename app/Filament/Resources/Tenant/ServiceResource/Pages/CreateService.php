@@ -9,7 +9,7 @@ class CreateService extends CreateRecord {
     protected static string $resource = ServiceResource::class;
 
     protected function getRedirectUrl(): string {
-        return $this->getResource()::getUrl('index');
+        return $this->getResource()::getUrl('index', ['tenant' => request()->get('tenant')]);
     }
 
     protected function getCreatedNotificationTitle(): ?string {

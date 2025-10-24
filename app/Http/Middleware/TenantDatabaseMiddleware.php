@@ -55,7 +55,13 @@ class TenantDatabaseMiddleware {
     private function getTenantId(Request $request): ?int {
         // 1. По параметру в URL (?tenant=9)
         if ($request->has('tenant')) {
-            return (int) $request->get('tenant');
+            $tenant = $request->get('tenant');
+            // Если это объект Tenant, берем его ID
+            if (is_object($tenant) && $tenant instanceof \App\Models\Tenant) {
+                return $tenant->id;
+            }
+            // Если это строка или число, конвертируем в int
+            return (int) $tenant;
         }
 
         // 2. По поддомену (test.localhost)

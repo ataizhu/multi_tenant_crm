@@ -6,7 +6,7 @@ class TenantUrlHelper {
     /**
      * Создать URL для тенанта с правильным контекстом
      */
-    public static function createUrl(string $path, $tenantId = null): string {
+    public static function createUrl(string $path, $tenantId = null, bool $autoLogin = false): string {
         if ($tenantId === null) {
             $tenantId = self::getCurrentTenantId();
         } else {
@@ -15,7 +15,14 @@ class TenantUrlHelper {
         }
 
         $separator = strpos($path, '?') !== false ? '&' : '?';
-        return $path . $separator . 'tenant=' . $tenantId;
+        $url = $path . $separator . 'tenant=' . $tenantId;
+
+        // Добавляем параметр автовхода если нужно
+        if ($autoLogin) {
+            $url .= '&auto_login=true';
+        }
+
+        return $url;
     }
 
     /**

@@ -199,6 +199,7 @@ class MeterResource extends Resource {
         return [
             'index' => Pages\ListMeters::route('/'),
             'create' => Pages\CreateMeter::route('/create'),
+            'view' => Pages\ViewMeter::route('/{record}'),
             'edit' => Pages\EditMeter::route('/{record}/edit'),
         ];
     }

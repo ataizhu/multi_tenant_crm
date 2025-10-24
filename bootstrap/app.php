@@ -13,10 +13,13 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             \App\Http\Middleware\TenantDatabaseMiddleware::class,
+            \App\Http\Middleware\SetTenantLocale::class,
         ]);
 
         $middleware->alias([
             'tenant.database' => \App\Http\Middleware\TenantDatabaseMiddleware::class,
+            'tenant.url' => \App\Http\Middleware\TenantUrlMiddleware::class,
+            'auth:tenant' => \Illuminate\Auth\Middleware\Authenticate::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

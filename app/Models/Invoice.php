@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Filament\Traits\HasStatusConfiguration;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Invoice extends Model {
-    use HasFactory;
+    use HasFactory, HasStatusConfiguration;
 
     protected $connection = 'tenant';
 
@@ -58,5 +59,27 @@ class Invoice extends Model {
 
     public function scopePending($query) {
         return $query->whereIn('status', ['draft', 'sent']);
+    }
+
+    // Константы для статусов счетов
+    protected static array $statuses = [
+        'draft' => 'draft',
+        'sent' => 'sent',
+        'paid' => 'paid',
+        'overdue' => 'overdue',
+        'cancelled' => 'cancelled',
+    ];
+
+    // Цвета для статусов
+    protected static array $statusColors = [
+        'draft' => 'gray',
+        'sent' => 'info',
+        'paid' => 'success',
+        'overdue' => 'danger',
+        'cancelled' => 'warning',
+    ];
+
+    protected static function getTranslationKey(): string {
+        return 'invoices';
     }
 }

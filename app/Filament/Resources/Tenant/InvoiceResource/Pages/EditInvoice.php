@@ -16,7 +16,7 @@ class EditInvoice extends EditRecord {
     }
 
     protected function getRedirectUrl(): string {
-        return $this->getResource()::getUrl('index');
+        return $this->getResource()::getUrl('index', ['tenant' => request()->get('tenant')]);
     }
 
     protected function getSavedNotificationTitle(): ?string {

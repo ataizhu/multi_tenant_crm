@@ -42,6 +42,14 @@ class TenantResource extends Resource {
                     ->maxLength(255)
                     ->unique(ignoreRecord: true)
                     ->prefix('tenant_'),
+                Forms\Components\Select::make('locale')
+                    ->label('Язык')
+                    ->options([
+                        'ru' => 'Русский',
+                        'en' => 'English',
+                    ])
+                    ->default('ru')
+                    ->required(),
                 Forms\Components\Select::make('status')
                     ->label('Статус')
                     ->options([
@@ -73,6 +81,16 @@ class TenantResource extends Resource {
                     ->label('Домен')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\BadgeColumn::make('locale')
+                    ->label('Язык')
+                    ->colors([
+                        'info' => 'ru',
+                        'warning' => 'en',
+                    ])
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'ru' => 'Русский',
+                        'en' => 'English',
+                    }),
                 Tables\Columns\TextColumn::make('database')
                     ->label('База данных')
                     ->searchable()
@@ -98,7 +116,13 @@ class TenantResource extends Resource {
                     ->label('CRM')
                     ->color('primary')
                     ->icon('heroicon-o-building-office')
-                    ->url(fn(Tenant $record): string => \App\Helpers\TenantUrlHelper::createUrl("/tenant-crm/tenant/subscribers", $record->id))
+                    ->url(fn(Tenant $record): string => \App\Helpers\TenantUrlHelper::createUrl("/tenant-crm/tenant/subscribers", $record->id, true))
+                    ->openUrlInNewTab(),
+                Tables\Actions\Action::make('users')
+                    ->label('Пользователи')
+                    ->color('info')
+                    ->icon('heroicon-o-users')
+                    ->url(fn(Tenant $record): string => \App\Helpers\TenantUrlHelper::createUrl("/tenant-crm/tenant-users", $record->id, true))
                     ->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()

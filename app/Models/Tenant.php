@@ -13,6 +13,7 @@ class Tenant extends Model {
     protected $fillable = [
         'name',
         'domain',
+        'locale',
         'email',
         'phone',
         'address',
@@ -27,6 +28,13 @@ class Tenant extends Model {
         'settings' => 'array',
         'deleted' => 'boolean',
     ];
+
+    /**
+     * Связь с пользователями тенанта
+     */
+    public function tenantUsers(): HasMany {
+        return $this->hasMany(TenantUser::class);
+    }
 
     /**
      * Связь с пользователями

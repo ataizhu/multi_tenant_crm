@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Filament\Traits\HasStatusConfiguration;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Subscriber extends Model {
-    use HasFactory;
+    use HasFactory, HasStatusConfiguration;
 
     protected $connection = 'tenant';
 
@@ -55,5 +56,25 @@ class Subscriber extends Model {
             $address .= ', кв. ' . $this->apartment_number;
         }
         return $address;
+    }
+
+    // Константы для статусов абонентов
+    protected static array $statuses = [
+        'active' => 'active',
+        'inactive' => 'inactive',
+        'suspended' => 'suspended',
+        'terminated' => 'terminated',
+    ];
+
+    // Цвета для статусов
+    protected static array $statusColors = [
+        'active' => 'success',
+        'inactive' => 'gray',
+        'suspended' => 'warning',
+        'terminated' => 'danger',
+    ];
+
+    protected static function getTranslationKey(): string {
+        return 'subscribers';
     }
 }
