@@ -33,6 +33,10 @@ class TenantPanelProvider extends PanelProvider {
             ->maxContentWidth('full')
             ->navigation(false) // Отключаем боковую навигацию
             ->renderHook('panels::topbar.start', fn(): string => view('components.top-navigation')->render())
+            ->renderHook('panels::head.end', fn(): string => '
+                <link rel="stylesheet" href="/css/tenant-panel.css">
+                <script src="/js/tenant-context.js"></script>
+            ')
             ->resources([
                 \App\Filament\Resources\Tenant\SubscriberResource::class,
                 \App\Filament\Resources\Tenant\MeterResource::class,

@@ -11,18 +11,21 @@ class TenantUrlMiddleware {
      * Handle an incoming request.
      */
     public function handle(Request $request, Closure $next): Response {
-        // Добавляем параметр tenant к URL, если он есть в сессии
-        if (session()->has('current_tenant')) {
-            $tenantId = session('current_tenant')->id;
+        // Приоритет: параметр в URL > сессия
+        $tenantId = $request->get('tenant');
 
-            // Если параметр tenant отсутствует в запросе, добавляем его
-            if (!$request->has('tenant')) {
-                $url = $request->fullUrl();
-                $separator = strpos($url, '?') !== false ? '&' : '?';
-                $newUrl = $url . $separator . 'tenant=' . $tenantId;
+        if (!$tenantId && session()->has('current_tenant')) {
+            $tenant = session('current_tenant');
+            $tenantId = is_object($tenant) ? $tenant->id : $tenant;
+        }
 
-                return redirect($newUrl);
-            }
+        // Если есть tenant ID, но его нет в URL, добавляем его
+        if ($tenantId && !$request->has('tenant')) {
+            $url = $request->fullUrl();
+            $separator = strpos($url, '?') !== false ? '&' : '?';
+            $newUrl = $url . $separator . 'tenant=' . $tenantId;
+
+            return redirect($newUrl);
         }
 
         return $next($request);

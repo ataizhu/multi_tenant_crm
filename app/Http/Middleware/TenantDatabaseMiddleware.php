@@ -69,7 +69,8 @@ class TenantDatabaseMiddleware {
 
         // 3. По сессии (если уже выбран tenant)
         if (session()->has('current_tenant')) {
-            return session('current_tenant')->id;
+            $tenant = session('current_tenant');
+            return is_object($tenant) ? $tenant->id : (int) $tenant;
         }
 
         return null;

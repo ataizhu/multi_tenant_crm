@@ -17,6 +17,18 @@ use Filament\Tables\Table;
 class ViewSubscriber extends ViewRecord {
     protected static string $resource = SubscriberResource::class;
 
+    public function getMaxContentWidth(): ?string {
+        return 'full';
+    }
+
+    protected function getFooterWidgets(): array {
+        return [];
+    }
+
+    protected function getHeaderWidgets(): array {
+        return [];
+    }
+
     protected function getHeaderActions(): array {
         return [
             Actions\EditAction::make()
@@ -33,80 +45,6 @@ class ViewSubscriber extends ViewRecord {
     public function infolist(Infolist $infolist): Infolist {
         return $infolist
             ->schema([
-                // Заголовок с основной информацией
-                Infolists\Components\Section::make()
-                    ->schema([
-                        Infolists\Components\Grid::make(4)
-                            ->schema([
-                                // Аватар
-                                Infolists\Components\Group::make()
-                                    ->schema([
-                                        Infolists\Components\ViewEntry::make('avatar')
-                                            ->view('components.subscriber-avatar')
-                                            ->viewData(fn($record) => ['subscriber' => $record]),
-                                    ])
-                                    ->columnSpan(1),
-
-                                // Основная информация
-                                Infolists\Components\Group::make()
-                                    ->schema([
-                                        Infolists\Components\TextEntry::make('name')
-                                            ->label('')
-                                            ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
-                                            ->weight('bold')
-                                            ->color('primary'),
-
-                                        Infolists\Components\TextEntry::make('status')
-                                            ->label('Статус')
-                                            ->badge()
-                                            ->size('lg')
-                                            ->color(fn(string $state): string => match ($state) {
-                                                'active' => 'success',
-                                                'inactive' => 'warning',
-                                                'blocked' => 'danger',
-                                            })
-                                            ->formatStateUsing(fn(string $state): string => match ($state) {
-                                                'active' => 'Активный',
-                                                'inactive' => 'Неактивный',
-                                                'blocked' => 'Заблокирован',
-                                            }),
-
-                                        Infolists\Components\TextEntry::make('registration_date')
-                                            ->label('Дата регистрации')
-                                            ->date('d.m.Y')
-                                            ->icon('heroicon-o-calendar')
-                                            ->color('gray'),
-                                    ])
-                                    ->columnSpan(2),
-
-                                // Баланс
-                                Infolists\Components\Group::make()
-                                    ->schema([
-                                        Infolists\Components\TextEntry::make('balance')
-                                            ->label('Баланс')
-                                            ->money('RUB')
-                                            ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
-                                            ->weight('bold')
-                                            ->color(fn($state) => $state >= 0 ? 'success' : 'danger')
-                                            ->icon(fn($state) => $state >= 0 ? 'heroicon-o-banknotes' : 'heroicon-o-exclamation-triangle'),
-
-                                        Infolists\Components\TextEntry::make('apartment_number')
-                                            ->label('Квартира')
-                                            ->badge()
-                                            ->icon('heroicon-o-home')
-                                            ->color('info'),
-
-                                        Infolists\Components\TextEntry::make('building_number')
-                                            ->label('Дом')
-                                            ->badge()
-                                            ->icon('heroicon-o-building-office')
-                                            ->color('info'),
-                                    ])
-                                    ->columnSpan(1),
-                            ]),
-                    ])
-                    ->collapsible(false),
-
                 // Вкладки с детальной информацией
                 Infolists\Components\Tabs::make('Subscriber Details')
                     ->tabs([
@@ -166,227 +104,189 @@ class ViewSubscriber extends ViewRecord {
                             ->icon('heroicon-o-cpu-chip')
                             ->badge(fn() => $this->record->meters()->count())
                             ->schema([
-                                Infolists\Components\Section::make('Установленные счетчики')
+                                Infolists\Components\RepeatableEntry::make('meters')
+                                    ->label('')
                                     ->schema([
-                                        Infolists\Components\RepeatableEntry::make('meters')
-                                            ->label('')
-                                            ->schema([
-                                                Infolists\Components\Grid::make(2)
-                                                    ->schema([
-                                                        // Основная информация о счетчике
-                                                        Infolists\Components\Group::make()
-                                                            ->schema([
-                                                                Infolists\Components\TextEntry::make('number')
-                                                                    ->label('Номер счетчика')
-                                                                    ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
-                                                                    ->weight('bold')
-                                                                    ->icon('heroicon-o-hashtag'),
+                                        Infolists\Components\TextEntry::make('number')
+                                            ->label('Номер')
+                                            ->weight('bold')
+                                            ->extraAttributes(['data-field' => 'number'])
+                                            ->url(fn($record) => route('filament.tenant.resources.tenant.meters.edit', ['record' => $record->id, 'tenant' => request()->get('tenant')]))
+                                            ->openUrlInNewTab(),
 
-                                                                Infolists\Components\TextEntry::make('type')
-                                                                    ->label('Тип')
-                                                                    ->badge()
-                                                                    ->size('lg')
-                                                                    ->color(fn(string $state): string => match ($state) {
-                                                                        'water' => 'primary',
-                                                                        'electricity' => 'success',
-                                                                        'gas' => 'warning',
-                                                                        'heating' => 'danger',
-                                                                    })
-                                                                    ->formatStateUsing(fn(string $state): string => match ($state) {
-                                                                        'water' => 'Вода',
-                                                                        'electricity' => 'Электричество',
-                                                                        'gas' => 'Газ',
-                                                                        'heating' => 'Отопление',
-                                                                    }),
+                                        Infolists\Components\TextEntry::make('type')
+                                            ->label('Тип')
+                                            ->badge()
+                                            ->color(fn(string $state): string => match ($state) {
+                                                'water' => 'primary',
+                                                'electricity' => 'success',
+                                                'gas' => 'warning',
+                                                'heating' => 'danger',
+                                            })
+                                            ->formatStateUsing(fn(string $state): string => match ($state) {
+                                                'water' => 'Вода',
+                                                'electricity' => 'Электричество',
+                                                'gas' => 'Газ',
+                                                'heating' => 'Отопление',
+                                            })
+                                            ->extraAttributes(['data-field' => 'type']),
 
-                                                                Infolists\Components\TextEntry::make('model')
-                                                                    ->label('Модель')
-                                                                    ->icon('heroicon-o-cog-6-tooth'),
-                                                            ]),
+                                        Infolists\Components\TextEntry::make('model')
+                                            ->label('Модель')
+                                            ->extraAttributes(['data-field' => 'model']),
 
-                                                        // Показания и статус
-                                                        Infolists\Components\Group::make()
-                                                            ->schema([
-                                                                Infolists\Components\TextEntry::make('last_reading')
-                                                                    ->label('Последнее показание')
-                                                                    ->numeric()
-                                                                    ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
-                                                                    ->weight('bold')
-                                                                    ->icon('heroicon-o-calculator'),
+                                        Infolists\Components\TextEntry::make('last_reading')
+                                            ->label('Показание')
+                                            ->numeric()
+                                            ->weight('bold')
+                                            ->extraAttributes(['data-field' => 'last_reading']),
 
-                                                                Infolists\Components\TextEntry::make('last_reading_date')
-                                                                    ->label('Дата показания')
-                                                                    ->date('d.m.Y')
-                                                                    ->icon('heroicon-o-calendar'),
+                                        Infolists\Components\TextEntry::make('last_reading_date')
+                                            ->label('Дата')
+                                            ->date('d.m.Y')
+                                            ->extraAttributes(['data-field' => 'last_reading_date']),
 
-                                                                Infolists\Components\TextEntry::make('status')
-                                                                    ->label('Статус')
-                                                                    ->badge()
-                                                                    ->size('lg')
-                                                                    ->color(fn(string $state): string => match ($state) {
-                                                                        'active' => 'success',
-                                                                        'inactive' => 'warning',
-                                                                        'broken' => 'danger',
-                                                                        'replaced' => 'secondary',
-                                                                    })
-                                                                    ->formatStateUsing(fn(string $state): string => match ($state) {
-                                                                        'active' => 'Активный',
-                                                                        'inactive' => 'Неактивный',
-                                                                        'broken' => 'Сломан',
-                                                                        'replaced' => 'Заменен',
-                                                                    }),
-                                                            ]),
-                                                    ]),
-                                            ])
-                                            ->columns(1),
-                                    ]),
+                                        Infolists\Components\TextEntry::make('status')
+                                            ->label('Статус')
+                                            ->badge()
+                                            ->color(fn(string $state): string => match ($state) {
+                                                'active' => 'success',
+                                                'inactive' => 'warning',
+                                                'broken' => 'danger',
+                                                'replaced' => 'secondary',
+                                            })
+                                            ->formatStateUsing(fn(string $state): string => match ($state) {
+                                                'active' => 'Активный',
+                                                'inactive' => 'Неактивный',
+                                                'broken' => 'Сломан',
+                                                'replaced' => 'Заменен',
+                                            })
+                                            ->extraAttributes(['data-field' => 'status']),
+                                    ])
+                                    ->columns(6)
+                                    ->extraAttributes(['class' => 'horizontal-list-item', 'data-type' => 'meter']),
                             ]),
 
                         Infolists\Components\Tabs\Tab::make('Счета')
                             ->icon('heroicon-o-receipt-percent')
                             ->badge(fn() => $this->record->invoices()->count())
                             ->schema([
-                                Infolists\Components\Section::make('История счетов')
+                                Infolists\Components\RepeatableEntry::make('invoices')
+                                    ->label('')
                                     ->schema([
-                                        Infolists\Components\RepeatableEntry::make('invoices')
-                                            ->label('')
-                                            ->schema([
-                                                Infolists\Components\Grid::make(2)
-                                                    ->schema([
-                                                        // Основная информация о счете
-                                                        Infolists\Components\Group::make()
-                                                            ->schema([
-                                                                Infolists\Components\TextEntry::make('invoice_number')
-                                                                    ->label('Номер счета')
-                                                                    ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
-                                                                    ->weight('bold')
-                                                                    ->icon('heroicon-o-document-text'),
+                                        Infolists\Components\TextEntry::make('invoice_number')
+                                            ->label('Номер')
+                                            ->weight('bold')
+                                            ->extraAttributes(['data-field' => 'invoice_number'])
+                                            ->url(fn($record) => route('filament.tenant.resources.tenant.invoices.edit', ['record' => $record->id, 'tenant' => request()->get('tenant')]))
+                                            ->openUrlInNewTab(),
 
-                                                                Infolists\Components\TextEntry::make('invoice_date')
-                                                                    ->label('Дата счета')
-                                                                    ->date('d.m.Y')
-                                                                    ->icon('heroicon-o-calendar'),
+                                        Infolists\Components\TextEntry::make('invoice_date')
+                                            ->label('Дата')
+                                            ->date('d.m.Y')
+                                            ->extraAttributes(['data-field' => 'invoice_date']),
 
-                                                                Infolists\Components\TextEntry::make('due_date')
-                                                                    ->label('Срок оплаты')
-                                                                    ->date('d.m.Y')
-                                                                    ->icon('heroicon-o-clock'),
-                                                            ]),
+                                        Infolists\Components\TextEntry::make('due_date')
+                                            ->label('Срок')
+                                            ->date('d.m.Y')
+                                            ->extraAttributes(['data-field' => 'due_date']),
 
-                                                        // Сумма и статус
-                                                        Infolists\Components\Group::make()
-                                                            ->schema([
-                                                                Infolists\Components\TextEntry::make('amount')
-                                                                    ->label('Сумма')
-                                                                    ->money('RUB')
-                                                                    ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
-                                                                    ->weight('bold')
-                                                                    ->icon('heroicon-o-banknotes'),
+                                        Infolists\Components\TextEntry::make('amount')
+                                            ->label('Сумма')
+                                            ->money('RUB')
+                                            ->weight('bold')
+                                            ->extraAttributes(['data-field' => 'amount']),
 
-                                                                Infolists\Components\TextEntry::make('total_amount')
-                                                                    ->label('Итого')
-                                                                    ->money('RUB')
-                                                                    ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
-                                                                    ->weight('bold')
-                                                                    ->color('primary'),
+                                        Infolists\Components\TextEntry::make('total_amount')
+                                            ->label('Итого')
+                                            ->money('RUB')
+                                            ->weight('bold')
+                                            ->color('primary')
+                                            ->extraAttributes(['data-field' => 'total_amount']),
 
-                                                                Infolists\Components\TextEntry::make('status')
-                                                                    ->label('Статус')
-                                                                    ->badge()
-                                                                    ->size('lg')
-                                                                    ->color(fn(string $state): string => match ($state) {
-                                                                        'draft' => 'gray',
-                                                                        'sent' => 'primary',
-                                                                        'paid' => 'success',
-                                                                        'overdue' => 'danger',
-                                                                        'cancelled' => 'secondary',
-                                                                    })
-                                                                    ->formatStateUsing(fn(string $state): string => match ($state) {
-                                                                        'draft' => 'Черновик',
-                                                                        'sent' => 'Отправлен',
-                                                                        'paid' => 'Оплачен',
-                                                                        'overdue' => 'Просрочен',
-                                                                        'cancelled' => 'Отменен',
-                                                                    }),
-                                                            ]),
-                                                    ]),
-                                            ])
-                                            ->columns(1),
-                                    ]),
+                                        Infolists\Components\TextEntry::make('status')
+                                            ->label('Статус')
+                                            ->badge()
+                                            ->color(fn(string $state): string => match ($state) {
+                                                'draft' => 'gray',
+                                                'sent' => 'primary',
+                                                'paid' => 'success',
+                                                'overdue' => 'danger',
+                                                'cancelled' => 'secondary',
+                                            })
+                                            ->formatStateUsing(fn(string $state): string => match ($state) {
+                                                'draft' => 'Черновик',
+                                                'sent' => 'Отправлен',
+                                                'paid' => 'Оплачен',
+                                                'overdue' => 'Просрочен',
+                                                'cancelled' => 'Отменен',
+                                            })
+                                            ->extraAttributes(['data-field' => 'status']),
+                                    ])
+                                    ->columns(6)
+                                    ->extraAttributes(['class' => 'horizontal-list-item', 'data-type' => 'invoice']),
                             ]),
 
                         Infolists\Components\Tabs\Tab::make('Платежи')
                             ->icon('heroicon-o-credit-card')
                             ->badge(fn() => $this->record->payments()->count())
                             ->schema([
-                                Infolists\Components\Section::make('История платежей')
+                                Infolists\Components\RepeatableEntry::make('payments')
+                                    ->label('')
                                     ->schema([
-                                        Infolists\Components\RepeatableEntry::make('payments')
-                                            ->label('')
-                                            ->schema([
-                                                Infolists\Components\Grid::make(2)
-                                                    ->schema([
-                                                        // Основная информация о платеже
-                                                        Infolists\Components\Group::make()
-                                                            ->schema([
-                                                                Infolists\Components\TextEntry::make('payment_number')
-                                                                    ->label('Номер платежа')
-                                                                    ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
-                                                                    ->weight('bold')
-                                                                    ->icon('heroicon-o-credit-card'),
+                                        Infolists\Components\TextEntry::make('payment_number')
+                                            ->label('Номер')
+                                            ->weight('bold')
+                                            ->extraAttributes(['data-field' => 'payment_number'])
+                                            ->url(fn($record) => route('filament.tenant.resources.tenant.payments.edit', ['record' => $record->id, 'tenant' => request()->get('tenant')]))
+                                            ->openUrlInNewTab(),
 
-                                                                Infolists\Components\TextEntry::make('payment_date')
-                                                                    ->label('Дата платежа')
-                                                                    ->date('d.m.Y')
-                                                                    ->icon('heroicon-o-calendar'),
+                                        Infolists\Components\TextEntry::make('payment_date')
+                                            ->label('Дата')
+                                            ->date('d.m.Y')
+                                            ->extraAttributes(['data-field' => 'payment_date']),
 
-                                                                Infolists\Components\TextEntry::make('payment_method')
-                                                                    ->label('Способ оплаты')
-                                                                    ->badge()
-                                                                    ->color('info')
-                                                                    ->formatStateUsing(fn(string $state): string => match ($state) {
-                                                                        'cash' => 'Наличные',
-                                                                        'card' => 'Банковская карта',
-                                                                        'bank_transfer' => 'Банковский перевод',
-                                                                        'mobile_payment' => 'Мобильный платеж',
-                                                                    }),
-                                                            ]),
+                                        Infolists\Components\TextEntry::make('payment_method')
+                                            ->label('Способ')
+                                            ->badge()
+                                            ->color('info')
+                                            ->formatStateUsing(fn(string $state): string => match ($state) {
+                                                'cash' => 'Наличные',
+                                                'card' => 'Карта',
+                                                'bank_transfer' => 'Перевод',
+                                                'mobile_payment' => 'Мобильный',
+                                            })
+                                            ->extraAttributes(['data-field' => 'payment_method']),
 
-                                                        // Сумма и статус
-                                                        Infolists\Components\Group::make()
-                                                            ->schema([
-                                                                Infolists\Components\TextEntry::make('amount')
-                                                                    ->label('Сумма')
-                                                                    ->money('RUB')
-                                                                    ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
-                                                                    ->weight('bold')
-                                                                    ->icon('heroicon-o-banknotes'),
+                                        Infolists\Components\TextEntry::make('amount')
+                                            ->label('Сумма')
+                                            ->money('RUB')
+                                            ->weight('bold')
+                                            ->extraAttributes(['data-field' => 'amount']),
 
-                                                                Infolists\Components\TextEntry::make('reference_number')
-                                                                    ->label('Номер чека')
-                                                                    ->icon('heroicon-o-receipt-percent'),
+                                        Infolists\Components\TextEntry::make('reference_number')
+                                            ->label('Чек')
+                                            ->extraAttributes(['data-field' => 'reference_number']),
 
-                                                                Infolists\Components\TextEntry::make('status')
-                                                                    ->label('Статус')
-                                                                    ->badge()
-                                                                    ->size('lg')
-                                                                    ->color(fn(string $state): string => match ($state) {
-                                                                        'pending' => 'warning',
-                                                                        'completed' => 'success',
-                                                                        'failed' => 'danger',
-                                                                        'refunded' => 'secondary',
-                                                                    })
-                                                                    ->formatStateUsing(fn(string $state): string => match ($state) {
-                                                                        'pending' => 'Ожидает',
-                                                                        'completed' => 'Завершен',
-                                                                        'failed' => 'Неудачный',
-                                                                        'refunded' => 'Возвращен',
-                                                                    }),
-                                                            ]),
-                                                    ]),
-                                            ])
-                                            ->columns(1),
-                                    ]),
+                                        Infolists\Components\TextEntry::make('status')
+                                            ->label('Статус')
+                                            ->badge()
+                                            ->color(fn(string $state): string => match ($state) {
+                                                'pending' => 'warning',
+                                                'completed' => 'success',
+                                                'failed' => 'danger',
+                                                'refunded' => 'secondary',
+                                            })
+                                            ->formatStateUsing(fn(string $state): string => match ($state) {
+                                                'pending' => 'Ожидает',
+                                                'completed' => 'Завершен',
+                                                'failed' => 'Неудачный',
+                                                'refunded' => 'Возвращен',
+                                            })
+                                            ->extraAttributes(['data-field' => 'status']),
+                                    ])
+                                    ->columns(6)
+                                    ->extraAttributes(['class' => 'horizontal-list-item', 'data-type' => 'payment']),
                             ]),
 
                         Infolists\Components\Tabs\Tab::make('Статистика')
@@ -450,7 +350,7 @@ class ViewSubscriber extends ViewRecord {
                                     ]),
                             ]),
                     ])
-                    ->activeTab(1)
+                    ->activeTab(0)
             ]);
     }
 }

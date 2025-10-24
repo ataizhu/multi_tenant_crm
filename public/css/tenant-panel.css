@@ -1,0 +1,935 @@
+/* Стили для полной ширины контента в Tenant Panel */
+
+/* Основные контейнеры */
+.fi-main-content {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+.fi-main {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+.fi-content {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+.fi-page {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+/* Секции и контент */
+.fi-in-section {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+.fi-section {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+.fi-section-content {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+/* Вкладки */
+.fi-tabs {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+.fi-tabpanel {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+.fi-in-tabs {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+.fi-in-tabs-tab {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+/* Grid контейнеры */
+.fi-fo-component-ctn {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+.col-\[--col-span-default\] {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+.grid-cols-\[--cols-default\] {
+    grid-template-columns: 1fr !important;
+}
+
+.lg\:grid-cols-\[--cols-lg\] {
+    grid-template-columns: 1fr !important;
+}
+
+/* Дополнительные стили для лучшего отображения списков */
+.fi-repeatable-entry {
+    width: 100% !important;
+}
+
+.fi-repeatable-entry-item {
+    width: 100% !important;
+}
+
+/* Стили для табличного отображения в списках */
+.fi-in-text-item {
+    word-break: break-word;
+}
+
+.fi-badge {
+    white-space: nowrap;
+}
+
+/* Кликабельные элементы списка - упрощенная структура */
+.clickable-list-item {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 48px;
+}
+
+.clickable-list-item:hover {
+    background-color: #f3f4f6;
+    border-color: #3b82f6;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.clickable-list-item:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для элементов в одну строку */
+.clickable-list-item .fi-grid-6 {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 16px !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+.clickable-list-item .col-\[--col-span-default\] {
+    flex: 1 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+}
+
+/* Стили для текстовых элементов в списке */
+.clickable-list-item .fi-in-text-item {
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
+}
+
+.clickable-list-item .fi-in-text-item-label {
+    display: none !important; /* Скрываем лейблы в списке */
+}
+
+/* Стили для бейджей в списке */
+.clickable-list-item .fi-badge {
+    font-size: 0.75rem !important;
+    padding: 2px 6px !important;
+}
+
+/* Убираем лишние отступы и границы */
+.fi-in-repeatable {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.fi-in-repeatable-item {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Убираем заголовки секций */
+.fi-section-header {
+    display: none !important;
+}
+
+.fi-section-content {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Стили для горизонтального отображения списков - работаем с реальной структурой Filament */
+.fi-in-repeatable-item,
+.listitem {
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    border-radius: 8px !important;
+    padding: 12px 16px !important;
+    margin-bottom: 8px !important;
+    border: 1px solid #e5e7eb !important;
+    background: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    min-height: 56px !important;
+    width: 100% !important;
+}
+
+.fi-in-repeatable-item:hover,
+.listitem:hover {
+    background-color: #f3f4f6 !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-1px) !important;
+}
+
+.fi-in-repeatable-item:active,
+.listitem:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Стили для элементов внутри listitem - горизонтальное расположение */
+.listitem .generic,
+.generic {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 16px !important;
+    width: 100% !important;
+    flex-wrap: nowrap !important;
+}
+
+.listitem .generic > *,
+.generic > * {
+    flex: 1 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+}
+
+/* Стили для term и definition внутри listitem */
+.listitem .generic .term,
+.listitem .generic .definition,
+.generic .term,
+.generic .definition {
+    display: none !important; /* Скрываем лейблы */
+}
+
+.listitem .generic .definition,
+.generic .definition {
+    display: flex !important;
+    align-items: center !important;
+    font-weight: 500 !important;
+}
+
+/* Специальные стили для горизонтальных списков в карточке абонента - компактные строки */
+.horizontal-list-item .fi-in-repeatable-item {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    padding: 8px 12px !important;
+    margin-bottom: 2px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 4px !important;
+    background: #ffffff !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+    min-height: 40px !important;
+}
+
+/* Делаем grid горизонтальным */
+.horizontal-list-item .fi-in-repeatable-item .fi-fo-component-ctn {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+}
+
+/* Убираем grid и делаем колонки flex */
+.horizontal-list-item .fi-in-repeatable-item .col-\[--col-span-default\] {
+    flex: 1 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+}
+
+/* Скрываем лейблы полностью */
+.horizontal-list-item .fi-in-repeatable-item .fi-in-entry-wrp-label {
+    display: none !important;
+}
+
+/* Делаем содержимое горизонтальным */
+.horizontal-list-item .fi-in-repeatable-item .fi-in-entry-wrp {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+/* Убираем вертикальные отступы */
+.horizontal-list-item .fi-in-repeatable-item .grid {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0 !important;
+}
+
+/* Убираем отступы в grid */
+.horizontal-list-item .fi-in-repeatable-item .grid.gap-y-2 {
+    gap: 0 !important;
+}
+
+/* Делаем dd элементы горизонтальными */
+.horizontal-list-item .fi-in-repeatable-item dd {
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    width: 100% !important;
+}
+
+/* Убираем отступы в auto-cols-fr */
+.horizontal-list-item .fi-in-repeatable-item .auto-cols-fr {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0 !important;
+}
+
+/* Делаем fi-in-text горизонтальным */
+.horizontal-list-item .fi-in-repeatable-item .fi-in-text {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+/* Делаем fi-in-affixes горизонтальным */
+.horizontal-list-item .fi-in-repeatable-item .fi-in-affixes {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+/* Делаем min-w-0 flex-1 горизонтальным */
+.horizontal-list-item .fi-in-repeatable-item .min-w-0.flex-1 {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+/* Делаем внутренний flex горизонтальным */
+.horizontal-list-item .fi-in-repeatable-item .min-w-0.flex-1 > div {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+.horizontal-list-item .fi-in-repeatable-item:hover {
+    background-color: #f8fafc !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Стили для элементов внутри горизонтального списка - горизонтальное расположение */
+.horizontal-list-item .fi-in-repeatable-item > * {
+    flex: 1 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+}
+
+/* Делаем fi-in-text-item горизонтальным */
+.horizontal-list-item .fi-in-repeatable-item .fi-in-text-item {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+}
+
+/* Делаем max-w-max горизонтальным */
+.horizontal-list-item .fi-in-repeatable-item .max-w-max {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+/* Делаем w-max горизонтальным */
+.horizontal-list-item .fi-in-repeatable-item .w-max {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+/* Скрываем лейблы в горизонтальных списках */
+.horizontal-list-item .fi-in-repeatable-item .fi-in-text-item-label {
+    display: none !important;
+}
+
+/* Стили для бейджей в горизонтальных списках - компактные */
+.horizontal-list-item .fi-in-repeatable-item .fi-badge {
+    font-size: 0.7rem !important;
+    padding: 2px 6px !important;
+    white-space: nowrap !important;
+    border-radius: 3px !important;
+}
+
+/* Стили для текстовых элементов в горизонтальных списках - компактные */
+.horizontal-list-item .fi-in-repeatable-item .fi-in-text-item {
+    font-size: 0.8rem !important;
+    line-height: 1.2rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-weight: 500 !important;
+}
+
+/* Стили для денежных значений */
+.horizontal-list-item .fi-in-repeatable-item .fi-in-text-item[data-field*="amount"] {
+    font-weight: 600 !important;
+    color: #059669 !important;
+}
+
+/* Стили для дат */
+.horizontal-list-item .fi-in-repeatable-item .fi-in-text-item[data-field*="date"] {
+    font-size: 0.75rem !important;
+    color: #6b7280 !important;
+}
+
+/* Альтернативные строки для табличного вида */
+.horizontal-list-item .fi-in-repeatable-item:nth-child(even) {
+    background-color: #f9fafb !important;
+}
+
+.horizontal-list-item .fi-in-repeatable-item:nth-child(even):hover {
+    background-color: #f1f5f9 !important;
+}
+
+/* Убираем лишние отступы между строками */
+.horizontal-list-item .fi-in-repeatable {
+    gap: 0 !important;
+}
+
+/* Стили для номеров и важных полей */
+.horizontal-list-item .fi-in-repeatable-item .fi-in-text-item[data-field*="number"] {
+    font-weight: 600 !important;
+    color: #1f2937 !important;
+}
+
+/* Стили для структуры definition > list > generic > listitem - горизонтальные строки */
+.definition .list .generic {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 16px !important;
+    width: 100% !important;
+    padding: 12px 16px !important;
+    margin-bottom: 8px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.definition .list .generic:hover {
+    background-color: #f3f4f6 !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Стили для элементов внутри generic - горизонтальное расположение */
+.definition .list .generic > * {
+    flex: 1 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+}
+
+/* Скрываем лейблы (term) и показываем только значения (definition) */
+.definition .list .generic .term {
+    display: none !important;
+}
+
+.definition .list .generic .definition {
+    display: flex !important;
+    align-items: center !important;
+    font-weight: 500 !important;
+}
+
+/* Стили для listitem внутри generic - горизонтальные строки */
+.definition .list .generic .listitem {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 16px !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    cursor: pointer !important;
+}
+
+.definition .list .generic .listitem > * {
+    flex: 1 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+}
+
+/* Стили для бейджей в горизонтальном списке */
+.listitem .generic .fi-badge {
+    font-size: 0.75rem !important;
+    padding: 4px 8px !important;
+    white-space: nowrap !important;
+}
+
+/* Стили для текстовых элементов в горизонтальном списке */
+.fi-in-repeatable-item .fi-in-text-item,
+.listitem .fi-in-text-item {
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.fi-in-repeatable-item .fi-in-text-item-label,
+.listitem .fi-in-text-item-label {
+    display: none !important; /* Скрываем лейблы в горизонтальном списке */
+}
+
+/* Стили для бейджей в горизонтальном списке */
+.fi-in-repeatable-item .fi-badge,
+.listitem .fi-badge {
+    font-size: 0.75rem !important;
+    padding: 4px 8px !important;
+    white-space: nowrap !important;
+}
+
+/* Убираем лишние отступы и границы */
+.fi-in-repeatable {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Стили для модальных окон - чистый минималистичный дизайн */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 0;
+    max-width: 480px;
+    width: 90vw;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    transform: scale(0.95) translateY(20px);
+    transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
+    --modal-primary: #1e293b;
+    --modal-secondary: #0f172a;
+    position: relative;
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+/* Заголовок модального окна */
+.modal-header {
+    background: #ffffff;
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #000000;
+    margin: 0;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #9ca3af;
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 400;
+}
+
+.modal-close:hover {
+    background-color: #f3f4f6;
+    color: #6b7280;
+}
+
+/* Тело модального окна */
+.modal-body {
+    padding: 0 24px 24px;
+    background: #ffffff;
+    color: #374151;
+    max-height: calc(80vh - 80px);
+    overflow-y: auto;
+}
+
+/* Кастомный скроллбар для модального окна */
+.modal-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: #f9fafb;
+    border-radius: 2px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 2px;
+    transition: background 0.2s ease;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Сетка деталей - вертикальный список */
+.detail-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 0;
+}
+
+/* Карточки деталей - минималистичный стиль */
+.detail-item {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 12px 0 !important;
+    position: relative !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.detail-item:last-child {
+    border-bottom: none !important;
+}
+
+.detail-item:hover {
+    background-color: #f9fafb !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+.detail-item::before {
+    display: none !important;
+}
+
+.detail-item:hover::before {
+    display: none !important;
+}
+
+.detail-label {
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: #6b7280 !important;
+    margin-bottom: 0 !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    line-height: 1.4 !important;
+    display: block !important;
+    flex: 1 !important;
+}
+
+.detail-value {
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: #000000 !important;
+    word-break: break-word !important;
+    line-height: 1.4 !important;
+    margin: 0 !important;
+    display: block !important;
+    text-align: right !important;
+    flex: 1 !important;
+}
+
+/* Специальные стили для разных типов значений */
+.detail-value[data-type="number"] {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace !important;
+    font-weight: 600 !important;
+    color: #000000 !important;
+}
+
+.detail-value[data-type="amount"] {
+    font-weight: 600 !important;
+    color: #000000 !important;
+    font-size: 0.875rem !important;
+}
+
+.detail-value[data-type="status"] {
+    display: inline-block !important;
+    padding: 2px 8px !important;
+    background: #f3f4f6 !important;
+    border-radius: 4px !important;
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
+}
+
+.detail-value[data-type="date"] {
+    color: #6b7280 !important;
+    font-weight: 500 !important;
+}
+
+/* Дополнительные стили для улучшения внешнего вида */
+.detail-value[data-type="text"] {
+    color: #000000 !important;
+    font-weight: 500 !important;
+}
+
+/* Стили для кнопки перехода к карточке */
+.modal-actions {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: center;
+}
+
+.view-full-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #000000;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: none;
+    cursor: pointer;
+}
+
+.view-full-btn:hover {
+    background: #374151;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    color: #ffffff;
+    text-decoration: none;
+}
+
+/* Анимация появления карточек */
+.detail-item {
+    animation: slideInUp 0.3s ease-out;
+    animation-fill-mode: both;
+}
+
+.detail-item:nth-child(1) { animation-delay: 0.1s; }
+.detail-item:nth-child(2) { animation-delay: 0.15s; }
+.detail-item:nth-child(3) { animation-delay: 0.2s; }
+.detail-item:nth-child(4) { animation-delay: 0.25s; }
+.detail-item:nth-child(5) { animation-delay: 0.3s; }
+.detail-item:nth-child(6) { animation-delay: 0.35s; }
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Улучшенная типографика */
+.modal-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.detail-label {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.detail-value {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .fi-grid-6 {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .modal-content {
+        margin: 16px;
+        max-width: calc(100vw - 32px);
+        border-radius: 16px;
+    }
+    
+    .modal-header {
+        padding: 24px 24px 20px;
+    }
+    
+    .modal-title {
+        font-size: 1.5rem;
+    }
+    
+    .modal-body {
+        padding: 24px;
+    }
+    
+    .detail-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .detail-item {
+        padding: 20px;
+    }
+    
+    .modal-actions {
+        margin-top: 24px;
+        padding-top: 20px;
+    }
+    
+    .view-full-btn {
+        padding: 12px 20px;
+        font-size: 0.85rem;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .fi-grid-6 {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .modal-content {
+        margin: 8px;
+        max-width: calc(100vw - 16px);
+        border-radius: 12px;
+    }
+    
+    .modal-header {
+        padding: 20px 20px 16px;
+    }
+    
+    .modal-title {
+        font-size: 1.25rem;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+    
+    .detail-item {
+        padding: 16px;
+    }
+    
+    .detail-label {
+        font-size: 0.7rem;
+    }
+    
+    .detail-value {
+        font-size: 1rem;
+    }
+    
+    .modal-close {
+        width: 40px;
+        height: 40px;
+        padding: 8px;
+    }
+    
+    .modal-actions {
+        margin-top: 20px;
+        padding-top: 16px;
+    }
+    
+    .view-full-btn {
+        padding: 10px 16px;
+        font-size: 0.8rem;
+        gap: 6px;
+    }
+    
+    .view-full-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+}

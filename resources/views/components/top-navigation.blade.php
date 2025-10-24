@@ -1,13 +1,19 @@
+@php
+    use App\Helpers\TenantUrlHelper;
+    $currentTenantId = TenantUrlHelper::getCurrentTenantId();
+@endphp
+
 <div class="flex items-center justify-between w-full">
     <!-- Название тенанта -->
-    <div class="text-xl font-bold text-gray-900">
-        {{ session('current_tenant')->name ?? 'CRM Система' }}
+    <div class="text-xl font-bold text-gray-900"
+        data-tenant-name="{{ request()->attributes->get('tenant')->name ?? session('current_tenant')->name ?? 'CRM Система' }}">
+        {{ request()->attributes->get('tenant')->name ?? session('current_tenant')->name ?? 'CRM Система' }}
     </div>
 
     <!-- Иконки модулей -->
     <div class="flex items-center space-x-4">
         <!-- Абоненты -->
-        <a href="/tenant-crm/tenant/subscribers?tenant={{ session('current_tenant')->id ?? 9 }}"
+        <a href="{{ TenantUrlHelper::createUrl('/tenant-crm/tenant/subscribers', $currentTenantId) }}"
             class="flex flex-col items-center p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors duration-200 group">
             <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -17,7 +23,7 @@
         </a>
 
         <!-- Счета -->
-        <a href="/tenant-crm/tenant/invoices?tenant={{ session('current_tenant')->id ?? 9 }}"
+        <a href="{{ TenantUrlHelper::createUrl('/tenant-crm/tenant/invoices', $currentTenantId) }}"
             class="flex flex-col items-center p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors duration-200 group">
             <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -28,7 +34,7 @@
         </a>
 
         <!-- Платежи -->
-        <a href="/tenant-crm/tenant/payments?tenant={{ session('current_tenant')->id ?? 9 }}"
+        <a href="{{ TenantUrlHelper::createUrl('/tenant-crm/tenant/payments', $currentTenantId) }}"
             class="flex flex-col items-center p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors duration-200 group">
             <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -38,7 +44,7 @@
         </a>
 
         <!-- Счетчики -->
-        <a href="/tenant-crm/tenant/meters?tenant={{ session('current_tenant')->id ?? 9 }}"
+        <a href="{{ TenantUrlHelper::createUrl('/tenant-crm/tenant/meters', $currentTenantId) }}"
             class="flex flex-col items-center p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors duration-200 group">
             <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -50,7 +56,7 @@
         </a>
 
         <!-- Показания -->
-        <a href="/tenant-crm/tenant/meter-readings?tenant={{ session('current_tenant')->id ?? 9 }}"
+        <a href="{{ TenantUrlHelper::createUrl('/tenant-crm/tenant/meter-readings', $currentTenantId) }}"
             class="flex flex-col items-center p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors duration-200 group">
             <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z">
@@ -60,7 +66,7 @@
         </a>
 
         <!-- Услуги -->
-        <a href="/tenant-crm/tenant/services?tenant={{ session('current_tenant')->id ?? 9 }}"
+        <a href="{{ TenantUrlHelper::createUrl('/tenant-crm/tenant/services', $currentTenantId) }}"
             class="flex flex-col items-center p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors duration-200 group">
             <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
