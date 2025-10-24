@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Filament\Traits\HasStatusConfiguration;
+use App\Filament\Traits\HasTypeConfiguration;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Meter extends Model {
-    use HasFactory;
+    use HasFactory, HasStatusConfiguration, HasTypeConfiguration;
 
     protected $connection = 'tenant';
 
@@ -46,5 +48,41 @@ class Meter extends Model {
 
     public function latestReading(): HasMany {
         return $this->hasMany(MeterReading::class)->latest('reading_date');
+    }
+
+    // Константы для типов счетчиков
+    protected static array $types = [
+        'water' => 'water',
+        'electricity' => 'electricity',
+        'gas' => 'gas',
+        'heating' => 'heating',
+    ];
+
+    // Константы для статусов счетчиков
+    protected static array $statuses = [
+        'active' => 'active',
+        'inactive' => 'inactive',
+        'broken' => 'broken',
+        'replaced' => 'replaced',
+    ];
+
+    // Цвета для типов
+    protected static array $typeColors = [
+        'water' => 'info',
+        'electricity' => 'warning',
+        'gas' => 'danger',
+        'heating' => 'success',
+    ];
+
+    // Цвета для статусов
+    protected static array $statusColors = [
+        'active' => 'success',
+        'inactive' => 'gray',
+        'broken' => 'danger',
+        'replaced' => 'warning',
+    ];
+
+    protected static function getTranslationKey(): string {
+        return 'meters';
     }
 }

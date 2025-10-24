@@ -9,7 +9,7 @@ class CreateInvoice extends CreateRecord {
     protected static string $resource = InvoiceResource::class;
 
     protected function getRedirectUrl(): string {
-        return $this->getResource()::getUrl('index');
+        return $this->getResource()::getUrl('index', ['tenant' => request()->get('tenant')]);
     }
 
     protected function getCreatedNotificationTitle(): ?string {

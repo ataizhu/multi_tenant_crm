@@ -19,6 +19,8 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Http\Middleware\TenantDatabaseMiddleware;
 use App\Http\Middleware\TenantUrlMiddleware;
+use App\Http\Middleware\AutoLoginTenantAdmin;
+use App\Http\Middleware\SetTenantLocale;
 
 class TenantPanelProvider extends PanelProvider {
     public function panel(Panel $panel): Panel {
@@ -33,6 +35,10 @@ class TenantPanelProvider extends PanelProvider {
             ->maxContentWidth('full')
             ->navigation(false) // Отключаем боковую навигацию
             ->renderHook('panels::topbar.start', fn(): string => view('components.top-navigation')->render())
+            ->renderHook('panels::head.end', fn(): string => '
+                <link rel="stylesheet" href="/css/tenant-panel.css">
+                <script src="/js/tenant-context.js"></script>
+            ')
             ->resources([
                 \App\Filament\Resources\Tenant\SubscriberResource::class,
                 \App\Filament\Resources\Tenant\MeterResource::class,
@@ -40,6 +46,7 @@ class TenantPanelProvider extends PanelProvider {
                 \App\Filament\Resources\Tenant\InvoiceResource::class,
                 \App\Filament\Resources\Tenant\PaymentResource::class,
                 \App\Filament\Resources\Tenant\ServiceResource::class,
+                \App\Filament\Resources\TenantUserResource::class,
             ])
             ->discoverPages(in: app_path('Filament/Tenant/Pages'), for: 'App\\Filament\\Tenant\\Pages')
             ->pages([
@@ -61,7 +68,12 @@ class TenantPanelProvider extends PanelProvider {
                 DispatchServingFilamentEvent::class,
                 TenantUrlMiddleware::class,
                 TenantDatabaseMiddleware::class,
+                AutoLoginTenantAdmin::class,
+                \App\Http\Middleware\RestoreTenantAuth::class,
+                SetTenantLocale::class,
+                \App\Http\Middleware\CheckTenantAccess::class,
             ])
-            ->authMiddleware([]);
+            ->authGuard('tenant')
+            ->authPasswordBroker('tenant_users');
     }
 }

@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Models\Tenant;
 use App\Models\TenantTrash;
+use App\Models\TenantUser;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class TenantService {
     /**
@@ -30,6 +32,9 @@ class TenantService {
         DB::transaction(function () use ($tenant) {
             $this->runTenantMigrations($tenant);
         });
+
+        // Создаем дефолтного администратора для тенанта
+        $this->createDefaultAdmin($tenant);
 
         return $tenant;
     }
@@ -204,6 +209,45 @@ class TenantService {
         } catch (\Exception $e) {
             // Логируем ошибку, но не прерываем выполнение
             \Log::warning("Не удалось удалить базу данных {$database}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Создать дефолтного администратора для тенанта
+     */
+    public function createDefaultAdmin(Tenant $tenant): void {
+        try {
+            // Создаем пользователя напрямую в БД тенанта
+            $pdo = new \PDO(
+                "pgsql:host=" . env('DB_HOST', '127.0.0.1') . ";port=" . env('DB_PORT', '5432') . ";dbname=" . $tenant->database,
+                env('DB_USERNAME', 'postgres'),
+                env('DB_PASSWORD', '')
+            );
+
+            $password = Hash::make('admin123');
+            $email = 'admin@' . $tenant->domain;
+            $locale = $tenant->locale ?? 'ru';
+
+            $stmt = $pdo->prepare("
+                INSERT INTO tenant_users (tenant_id, name, email, password, locale, is_admin, is_active, created_at, updated_at) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+            ");
+
+            $stmt->execute([
+                $tenant->id,
+                'Администратор',
+                $email,
+                $password,
+                $locale,
+                true,
+                true
+            ]);
+
+            echo "Created admin for tenant {$tenant->id} ({$tenant->name})" . PHP_EOL;
+
+        } catch (\Exception $e) {
+            \Log::warning("Не удалось создать дефолтного администратора для тенанта {$tenant->id}: " . $e->getMessage());
+            echo "Error creating admin for tenant {$tenant->id}: " . $e->getMessage() . PHP_EOL;
         }
     }
 }

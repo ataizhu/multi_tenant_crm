@@ -3,10 +3,13 @@
 namespace App\Filament\Resources\Tenant\SubscriberResource\Pages;
 
 use App\Filament\Resources\Tenant\SubscriberResource;
+use App\Filament\Traits\TenantAwareBreadcrumbs;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
 class ListSubscribers extends ListRecords {
+    use TenantAwareBreadcrumbs;
+
     protected static string $resource = SubscriberResource::class;
 
     protected function getHeaderActions(): array {

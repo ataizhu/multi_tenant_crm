@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Filament\Traits\HasStatusConfiguration;
+use App\Filament\Traits\HasTypeConfiguration;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Payment extends Model {
-    use HasFactory;
+    use HasFactory, HasStatusConfiguration, HasTypeConfiguration;
 
     protected $connection = 'tenant';
 
@@ -44,5 +46,45 @@ class Payment extends Model {
 
     public function scopePending($query) {
         return $query->where('status', 'pending');
+    }
+
+    // Константы для способов оплаты
+    protected static array $types = [
+        'cash' => 'cash',
+        'card' => 'card',
+        'bank_transfer' => 'bank_transfer',
+        'online' => 'online',
+        'check' => 'check',
+    ];
+
+    // Константы для статусов платежей
+    protected static array $statuses = [
+        'pending' => 'pending',
+        'completed' => 'completed',
+        'failed' => 'failed',
+        'refunded' => 'refunded',
+        'cancelled' => 'cancelled',
+    ];
+
+    // Цвета для способов оплаты
+    protected static array $typeColors = [
+        'cash' => 'success',
+        'card' => 'info',
+        'bank_transfer' => 'primary',
+        'online' => 'warning',
+        'check' => 'gray',
+    ];
+
+    // Цвета для статусов
+    protected static array $statusColors = [
+        'pending' => 'warning',
+        'completed' => 'success',
+        'failed' => 'danger',
+        'refunded' => 'info',
+        'cancelled' => 'gray',
+    ];
+
+    protected static function getTranslationKey(): string {
+        return 'payments';
     }
 }
